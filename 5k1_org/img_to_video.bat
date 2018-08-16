@@ -1,24 +1,13 @@
 @echo off
 set "startTime=%time%"
-REM call python to rename all images and remove any output files
-set numprocessors=10
-set loopcount=14
-python ./changes_name_mogrify.py
-
-REM call mogrify to minimize/crop the images
-FOR /L %%A IN (0,1,%loopcount%) DO (
-  start magick mogrify -resize 1280x720 -strip -define jpeg:extent=40kb %%A-*.jpg
-)
+REM magick *.jpg[1280x720] thumbnail%03d.png
+F:\Img_to_Video\ffmpeg\bin\ffmpeg.exe -framerate 25  -start_number 1 -pattern_type sequence -i %%d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output3.mp4
 :LOOP
 tasklist /FI "IMAGENAME eq magick.exe" 2>NUL | find /I /N "magick.exe">NUL
 if %ERRORLEVEL%==0 (
-    ping localhost -n 1 >nul
+    ping localhost -n 2 >nul
     GOTO LOOP
 )
-REM call python to reset file names for ffmpeg
-python ./changes_name_ffmpeg.py
-REM call ffmpeg to create the video
-F:\Img_to_Video\ffmpeg\bin\ffmpeg.exe -framerate 25  -start_number 1 -pattern_type sequence -i %%d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p output.mp4
 
 set "stopTime=%time%"
 call :timeDiff diff startTime stopTime
